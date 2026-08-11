@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-chart-line me-2"></i>Statistics & Analytics</h2>
+            <p class="text-muted">View detailed statistics about complaints and system usage</p>
+            <hr>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Reports by Date</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="dateChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Reports by Police Station</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="stationChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Reports by Status</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Date Chart
+    const dateCtx = document.getElementById('dateChart').getContext('2d');
+    new Chart(dateCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for item in reports_by_date %}'{{ item.date }}',{% endfor %}],
+            datasets: [{
+                label: 'Number of Reports',
+                data: [{% for item in reports_by_date %}{{ item.count }},{% endfor %}],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+    
+    // Station Chart
+    const stationCtx = document.getElementById('stationChart').getContext('2d');
+    new Chart(stationCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for item in reports_by_station %}'{{ item.police_station }}',{% endfor %}],
+            datasets: [{
+                label: 'Number of Reports',
+                data: [{% for item in reports_by_station %}{{ item.count }},{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+    
+    // Status Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for item in reports_by_status %}'{{ item.status }}',{% endfor %}],
+            datasets: [{
+                data: [{% for item in reports_by_status %}{{ item.count }},{% endfor %}],
+                backgroundColor: ['#ffc107', '#0dcaf0', '#198754', '#dc3545', '#6c757d']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

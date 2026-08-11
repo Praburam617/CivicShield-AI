@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-danger text-white text-center py-3">
+                    <h3 class="mb-0"><i class="fas fa-flag me-2"></i>File a Complaint</h3>
+                    <p class="mb-0 mt-2">Please provide accurate details for proper investigation</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control", placeholder="Brief title of the complaint") }}
+                            {% for error in form.title.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", rows="6", placeholder="Provide detailed description of the incident...") }}
+                            {% for error in form.description.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.crime_category.label(class="form-label") }}
+                                {{ form.crime_category(class="form-select") }}
+                                {% for error in form.crime_category.errors %}
+                                    <span class="text-danger">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.incident_date.label(class="form-label") }}
+                                {{ form.incident_date(class="form-control", type="datetime-local") }}
+                                {% for error in form.incident_date.errors %}
+                                    <span class="text-danger">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.incident_location.label(class="form-label") }}
+                                {{ form.incident_location(class="form-control", placeholder="Address or location description") }}
+                                {% for error in form.incident_location.errors %}
+                                    <span class="text-danger">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.police_station.label(class="form-label") }}
+                                {{ form.police_station(class="form-select") }}
+                                {% for error in form.police_station.errors %}
+                                    <span class="text-danger">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.evidence_file.label(class="form-label") }}
+                            {{ form.evidence_file(class="form-control") }}
+                            <small class="text-muted">Allowed formats: PNG, JPG, JPEG, GIF, PDF (Max 16MB)</small>
+                            {% for error in form.evidence_file.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Important:</strong> Filing false complaints is a punishable offense. Please ensure all information provided is accurate.
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-danger btn-lg") }}
+                            <a href="{{ url_for('user.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

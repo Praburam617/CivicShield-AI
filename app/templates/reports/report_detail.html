@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('user.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('user.my_reports') }}">My Complaints</a></li>
+                    <li class="breadcrumb-item active">Complaint Details</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>Complaint Details</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Complaint Number:</strong>
+                            <p><code class="fs-5">{{ report.complaint_number }}</code></p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Status:</strong>
+                            <p>
+                                {% if report.status == 'Pending' %}
+                                    <span class="badge bg-warning fs-6">Pending</span>
+                                {% elif report.status == 'Under Investigation' %}
+                                    <span class="badge bg-info fs-6">Under Investigation</span>
+                                {% elif report.status == 'Resolved' %}
+                                    <span class="badge bg-success fs-6">Resolved</span>
+                                {% elif report.status == 'Rejected' %}
+                                    <span class="badge bg-danger fs-6">Rejected</span>
+                                {% else %}
+                                    <span class="badge bg-secondary fs-6">{{ report.status }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Title:</strong>
+                            <p>{{ report.title }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Description:</strong>
+                            <p class="bg-light p-3 rounded">{{ report.description }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Crime Category:</strong>
+                            <p>{{ report.crime_category }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Incident Date & Time:</strong>
+                            <p>{{ report.incident_date.strftime('%d-%m-%Y %H:%M') }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Incident Location:</strong>
+                            <p>{{ report.incident_location }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Police Station:</strong>
+                            <p>{{ report.police_station }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Filed On:</strong>
+                            <p>{{ report.created_at.strftime('%d-%m-%Y %H:%M') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Last Updated:</strong>
+                            <p>{{ report.updated_at.strftime('%d-%m-%Y %H:%M') }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if report.evidence_file %}
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Evidence:</strong>
+                            <p>
+                                <a href="{{ url_for('static', filename='uploads/' + report.evidence_file) }}" target="_blank" class="btn btn-sm btn-info">
+                                    <i class="fas fa-download"></i> View Evidence
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if report.assigned_officer %}
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Assigned Officer:</strong>
+                            <p>{{ report.assigned_officer }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if report.admin_remarks %}
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Admin Remarks:</strong>
+                            <p class="bg-warning bg-opacity-10 p-3 rounded">{{ report.admin_remarks }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Update History</h5>
+                </div>
+                <div class="card-body">
+                    {% if report.updates %}
+                        <div class="timeline">
+                            {% for update in report.updates|reverse %}
+                                <div class="timeline-item mb-3">
+                                    <div class="timeline-badge">
+                                        {% if update.status == 'Pending' %}
+                                            <i class="fas fa-clock text-warning"></i>
+                                        {% elif update.status == 'Under Investigation' %}
+                                            <i class="fas fa-search text-info"></i>
+                                        {% elif update.status == 'Resolved' %}
+                                            <i class="fas fa-check-circle text-success"></i>
+                                        {% else %}
+                                            <i class="fas fa-flag text-secondary"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="timeline-content">
+                                        <strong>{{ update.status }}</strong>
+                                        <p class="small text-muted">{{ update.created_at.strftime('%d-%m-%Y %H:%M') }}</p>
+                                        <p class="small">{{ update.remarks }}</p>
+                                    </div>
+                                </div>
+                                {% if not loop.last %}<hr>{% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No updates yet</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-phone-alt me-2"></i>Need Help?</h5>
+                </div>
+                <div class="card-body">
+                    <p>For any queries regarding your complaint, please contact:</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-phone me-2"></i> Helpline: 100</li>
+                        <li><i class="fas fa-envelope me-2"></i> Email: support@crimereporting.gov</li>
+                        <li><i class="fas fa-building me-2"></i> {{ report.police_station }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline-item {
+    position: relative;
+    padding-left: 30px;
+}
+.timeline-badge {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+.timeline-content {
+    padding-left: 10px;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_reports') }}">Manage Complaints</a></li>
+                    <li class="breadcrumb-item active">Complaint Details</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>Complaint Details</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Complaint Number:</strong>
+                            <p><code class="fs-5">{{ report.complaint_number }}</code></p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Status:</strong>
+                            <p>
+                                {% if report.status == 'Pending' %}
+                                    <span class="badge bg-warning fs-6">Pending</span>
+                                {% elif report.status == 'Under Investigation' %}
+                                    <span class="badge bg-info fs-6">Under Investigation</span>
+                                {% elif report.status == 'Evidence Collected' %}
+                                    <span class="badge bg-secondary fs-6">Evidence Collected</span>
+                                {% elif report.status == 'Resolved' %}
+                                    <span class="badge bg-success fs-6">Resolved</span>
+                                {% elif report.status == 'Rejected' %}
+                                    <span class="badge bg-danger fs-6">Rejected</span>
+                                {% else %}
+                                    <span class="badge bg-secondary fs-6">{{ report.status }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Complainant:</strong>
+                            <p>
+                                {{ report.complainant.full_name }}<br>
+                                <small class="text-muted">Username: {{ report.complainant.username }}</small><br>
+                                <small class="text-muted">Email: {{ report.complainant.email }}</small><br>
+                                <small class="text-muted">Phone: {{ report.complainant.phone }}</small>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Aadhar Number:</strong>
+                            <p>{{ report.complainant.aadhar_number[:4] }}-XXXX-{{ report.complainant.aadhar_number[-4:] }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Title:</strong>
+                            <p>{{ report.title }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Description:</strong>
+                            <p class="bg-light p-3 rounded">{{ report.description }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Crime Category:</strong>
+                            <p>{{ report.crime_category }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Incident Date & Time:</strong>
+                            <p>{{ report.incident_date.strftime('%d-%m-%Y %H:%M') }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Incident Location:</strong>
+                            <p>{{ report.incident_location }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Police Station:</strong>
+                            <p>{{ report.police_station }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if report.evidence_file %}
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Evidence:</strong>
+                            <p>
+                                <a href="{{ url_for('static', filename='uploads/' + report.evidence_file) }}" target="_blank" class="btn btn-sm btn-info">
+                                    <i class="fas fa-download"></i> View Evidence
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Update Status</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.update_report', report_id=report.id) }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.status.label(class="form-label") }}
+                            {{ form.status(class="form-select") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.assigned_officer.label(class="form-label") }}
+                            {{ form.assigned_officer(class="form-control", placeholder="Name of investigating officer") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.remarks.label(class="form-label") }}
+                            {{ form.remarks(class="form-control", rows="3", placeholder="Add remarks or investigation notes...") }}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-success") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Update History</h5>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    {% if report.updates %}
+                        {% for update in report.updates|reverse %}
+                            <div class="mb-3 pb-3 border-bottom">
+                                <strong>{{ update.status }}</strong>
+                                <p class="small text-muted">{{ update.created_at.strftime('%d-%m-%Y %H:%M') }}</p>
+                                <p class="small">{{ update.remarks }}</p>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No updates yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
