@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Notice & Platform Advisory — CivicShield AI{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 900px;">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('auth.index') }}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Privacy & Advisory</li>
+        </ol>
+    </nav>
+
+    <div class="card card-civic p-4 p-md-5">
+        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+            <div class="brand-badge bg-primary text-white rounded-3 p-3 fs-4">
+                <i class="fas fa-shield-halved"></i>
+            </div>
+            <div>
+                <h3 class="fw-bold mb-1">Privacy Notice & Platform Advisory</h3>
+                <p class="text-muted small mb-0">Transparency statement on data minimization, protected evidence handling, and system scope.</p>
+            </div>
+        </div>
+
+        <div class="alert alert-secondary small mb-4">
+            <i class="fas fa-info-circle me-1 text-primary"></i>
+            <strong>Effective Date:</strong> 2026 Academic Year &bull; <strong>Status:</strong> Educational & Portfolio Demonstration Portal
+        </div>
+
+        <h5 class="fw-bold text-dark mt-4 mb-2">1. Educational & Non-Official System Scope</h5>
+        <p class="text-muted small">
+            CivicShield AI is an academic portfolio project developed to demonstrate full-stack Python application architecture, role-based workflows, protected asset storage, and practical machine learning text classification. It is <strong>NOT</strong> an official government agency, police department portal, or court of law. It does not replace statutory police reporting channels. In any real emergency, immediately dial <strong>112</strong> or <strong>100</strong>.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4 mb-2">2. Data Minimization Principles</h5>
+        <p class="text-muted small">
+            In compliance with privacy engineering standards:
+        </p>
+        <ul class="text-muted small">
+            <li><strong>No Routine Aadhaar Collection:</strong> We do not require, collect, or store national biometric or Aadhaar numbers for citizen registrations.</li>
+            <li><strong>Minimal Account Information:</strong> Citizens provide only basic contact details (full name, email, phone number) necessary to communicate case milestones.</li>
+            <li><strong>No Third-Party Tracking:</strong> The application does not deploy advertising trackers, commercial cookies, or external ad scripts.</li>
+        </ul>
+
+        <h5 class="fw-bold text-dark mt-4 mb-2">3. Protected Evidence Storage & Access Controls</h5>
+        <p class="text-muted small">
+            Uploaded evidence documents and photos are held in isolated, non-public storage directories. Files cannot be accessed through guessable public URLs. Every view or download request requires authenticated session verification against the database:
+        </p>
+        <ul class="text-muted small">
+            <li>Only the filing citizen, the designated investigating officer, and system administrators hold authorization to inspect attached evidence.</li>
+            <li>Every access to an evidence file creates an indelible record in the system audit log.</li>
+            <li>Files undergo content integrity inspection to prevent malicious uploads.</li>
+        </ul>
+
+        <h5 class="fw-bold text-dark mt-4 mb-2">4. Machine Learning & Privacy</h5>
+        <p class="text-muted small">
+            The complaint classification system operates locally using a lightweight Python scikit-learn model. Your incident narrative is processed securely on the server without sending user data to third-party commercial cloud AI providers.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4 mb-2">5. User Inquiries</h5>
+        <p class="text-muted small">
+            For academic inquiries, architecture reviews, or portfolio discussions regarding this system, contact the project maintainer via the administrative console or GitHub repository.
+        </p>
+    </div>
+</div>
+{% endblock %}

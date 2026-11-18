@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Too Many Requests (429) — CivicShield AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center" style="max-width: 600px;">
+    <div class="rounded-circle bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center p-4 mb-3 fs-1" style="width: 80px; height: 80px;">
+        <i class="fas fa-gauge"></i>
+    </div>
+    <h3 class="fw-bold text-dark mb-2">429 — Rate Limit Exceeded</h3>
+    <p class="text-muted small mb-4">
+        To protect system integrity against automated abuse and brute-force attacks, request rates are restricted. Please wait a moment before trying again.
+    </p>
+    <div class="d-flex justify-content-center gap-2">
+        <a href="{{ url_for('auth.index') }}" class="btn btn-civic-primary">Return to Portal Home</a>
+    </div>
+</div>
+{% endblock %}

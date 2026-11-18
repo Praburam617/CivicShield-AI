@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Police Officers — Admin Console{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Manage Officers</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">
+                <i class="fas fa-user-shield text-primary me-2"></i>Police Officer Directory Management
+            </h3>
+            <p class="text-muted small mb-0">
+                Maintain station personnel rosters across jurisdictions, manage availability status, and provision individual login accounts.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-users me-1"></i> System Users
+            </a>
+            <a href="{{ url_for('admin.create_officer') }}" class="btn btn-civic-primary btn-sm">
+                <i class="fas fa-user-plus me-1"></i> Add Officer Profile
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="card card-civic p-3 mb-4">
+        <form method="GET" action="{{ url_for('admin.manage_officers') }}" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search by name, badge, rank, department..." value="{{ search or '' }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="station" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Police Stations (14)</option>
+                    {% for st in stations %}
+                        <option value="{{ st }}" {% if current_station == st %}selected{% endif %}>{{ st }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="available" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Availability</option>
+                    <option value="true" {% if current_available == 'true' %}selected{% endif %}>Available</option>
+                    <option value="false" {% if current_available == 'false' %}selected{% endif %}>Unavailable</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="account" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Account States</option>
+                    <option value="linked" {% if current_account == 'linked' %}selected{% endif %}>Login Active</option>
+                    <option value="unlinked" {% if current_account == 'unlinked' %}selected{% endif %}>Directory Only</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex">
+                <a href="{{ url_for('admin.manage_officers') }}" class="btn btn-civic-secondary btn-sm w-100" title="Reset Filters">
+                    <i class="fas fa-rotate-left"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Officers Table Card -->
+    <div class="card card-civic">
+        <div class="card-body p-0">
+            {% if officers.items %}
+                <div class="table-responsive">
+                    <table class="table table-civic mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Officer Details</th>
+                                <th>Badge Number</th>
+                                <th>Police Station Jurisdiction</th>
+                                <th>Department</th>
+                                <th>Availability</th>
+                                <th>Active Cases</th>
+                                <th>Login Access</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for off in officers.items %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ off.designation }} {{ off.name }}</div>
+                                        <div class="text-muted" style="font-size: 0.725rem;">{{ off.designation }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border font-monospace">{{ off.badge_number }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-semibold text-dark">{{ off.police_station }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="small text-secondary">{{ off.department }}</span>
+                                    </td>
+                                    <td>
+                                        {% if off.is_available %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.72rem;">
+                                                <i class="fas fa-circle-check me-1"></i> Available
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 0.72rem;">
+                                                <i class="fas fa-circle-xmark me-1"></i> Unavailable
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if off.active_case_count > 0 %}bg-primary{% else %}bg-light text-muted border{% endif %}">
+                                            {{ off.active_case_count }} Cases
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if off.has_account %}
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.72rem;" title="Account username: @{{ off.user.username }}">
+                                                <i class="fas fa-user-check me-1"></i> Active (@{{ off.user.username }})
+                                            </span>
+                                        {% else %}
+                                            <div class="d-flex align-items-center gap-1">
+                                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.72rem;">
+                                                    Directory Only
+                                                </span>
+                                                <a href="{{ url_for('admin.provision_officer_account', officer_id=off.id) }}" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.72rem;" title="Create individual login account">
+                                                    <i class="fas fa-key me-1"></i> Create Login
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-1">
+                                            <a href="{{ url_for('admin.edit_officer', officer_id=off.id) }}" class="btn btn-civic-secondary btn-sm py-0 px-2" style="font-size: 0.75rem;" title="Edit Officer Profile">
+                                                <i class="fas fa-pen-to-square"></i>
+                                            </a>
+                                            <form method="POST" action="{{ url_for('admin.toggle_officer_status', officer_id=off.id) }}" class="d-inline" onsubmit="return confirm('Toggle availability status for {{ off.name }}?');">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-sm {% if off.is_available %}btn-outline-warning{% else %}btn-outline-success{% endif %} py-0 px-2" style="font-size: 0.75rem;" title="Toggle Availability">
+                                                    <i class="fas {% if off.is_available %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if officers.pages > 1 %}
+                    <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                        <span class="small text-muted">
+                            Showing page {{ officers.page }} of {{ officers.pages }} ({{ officers.total }} total officers)
+                        </span>
+                        <nav aria-label="Officer page navigation">
+                            <ul class="pagination pagination-sm mb-0">
+                                {% if officers.has_prev %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('admin.manage_officers', page=officers.prev_num, station=current_station, available=current_available, account=current_account, search=search) }}">Previous</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                                {% endif %}
+
+                                {% for page_num in officers.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                                    {% if page_num %}
+                                        <li class="page-item {% if page_num == officers.page %}active{% endif %}">
+                                            <a class="page-link" href="{{ url_for('admin.manage_officers', page=page_num, station=current_station, available=current_available, account=current_account, search=search) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if officers.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('admin.manage_officers', page=officers.next_num, station=current_station, available=current_available, account=current_account, search=search) }}">Next</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-user-shield text-muted fs-1 mb-3"></i>
+                    <h5 class="fw-bold text-dark">No Officer Profiles Found</h5>
+                    <p class="text-muted small mb-3">No officer profiles match your active search filters.</p>
+                    <a href="{{ url_for('admin.manage_officers') }}" class="btn btn-civic-secondary btn-sm">Clear Filters</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

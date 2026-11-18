@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Assigned Cases — Officer Portal{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('officer.dashboard') }}">Officer Console</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Assigned Cases</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">
+                <i class="fas fa-briefcase text-primary me-2"></i>My Investigation Docket
+            </h3>
+            <p class="text-muted small mb-0">Complaints assigned to Badge {{ current_user.badge_number or current_user.username }} at {{ current_user.police_station or 'Central Police Station' }}</p>
+        </div>
+    </div>
+
+    <!-- Filter and Search Card -->
+    <div class="card card-civic p-3 mb-4">
+        <form method="GET" action="{{ url_for('officer.assigned_cases') }}" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search by reference, title, or category..." value="{{ search or '' }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="All" {% if not current_status or current_status == 'All' %}selected{% endif %}>All Case Statuses</option>
+                    <option value="Under Investigation" {% if current_status == 'Under Investigation' %}selected{% endif %}>Under Investigation</option>
+                    <option value="Evidence Collected" {% if current_status == 'Evidence Collected' %}selected{% endif %}>Evidence Collected</option>
+                    <option value="Action Required" {% if current_status == 'Action Required' %}selected{% endif %}>Action Required (Follow-up)</option>
+                    <option value="Pending" {% if current_status == 'Pending' %}selected{% endif %}>Pending Review</option>
+                    <option value="Resolved" {% if current_status == 'Resolved' %}selected{% endif %}>Resolved / Closed</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-civic-primary btn-sm flex-grow-1">Filter</button>
+                <a href="{{ url_for('officer.assigned_cases') }}" class="btn btn-civic-secondary btn-sm">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Cases Table -->
+    <div class="card card-civic">
+        <div class="card-body p-0">
+            {% if cases.items %}
+                <div class="table-responsive">
+                    <table class="table table-civic mb-0">
+                        <thead>
+                            <tr>
+                                <th>Complaint Ref</th>
+                                <th>Category & Title</th>
+                                <th>Complainant</th>
+                                <th>Incident Date</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in cases.items %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('officer.view_case', report_id=c.id) }}" class="fw-bold text-primary text-decoration-none">
+                                            {{ c.complaint_number }}
+                                        </a>
+                                        <div class="text-muted" style="font-size: 0.75rem;">
+                                            Registered {{ c.created_at.strftime('%Y-%m-%d') }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark text-truncate" style="max-width: 250px;" title="{{ c.title }}">
+                                            {{ c.title }}
+                                        </div>
+                                        <span class="badge bg-light text-secondary border" style="font-size: 0.725rem;">
+                                            {{ c.crime_category }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-semibold text-dark">{{ c.complainant.full_name }}</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">{{ c.complainant.phone or c.complainant.email }}</div>
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ c.incident_date.strftime('%Y-%m-%d %H:%M') if c.incident_date else "N/A" }}
+                                    </td>
+                                    <td>
+                                        {% set st_class = c.status.lower().replace(' ', '-') %}
+                                        <span class="badge-status status-{{ st_class }}">
+                                            {{ c.status }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('officer.view_case', report_id=c.id) }}" class="btn btn-sm btn-civic-primary">
+                                            <i class="fas fa-folder-open me-1"></i> Open File
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if cases.pages > 1 %}
+                    <div class="p-3 border-top d-flex justify-content-between align-items-center">
+                        <span class="small text-muted">Page {{ cases.page }} of {{ cases.pages }}</span>
+                        <ul class="pagination pagination-sm mb-0">
+                            {% if cases.has_prev %}
+                                <li class="page-item"><a class="page-link" href="{{ url_for('officer.assigned_cases', page=cases.prev_num, status=current_status, search=search) }}">Previous</a></li>
+                            {% endif %}
+                            {% for p in cases.iter_pages() %}
+                                {% if p %}
+                                    <li class="page-item {% if p == cases.page %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('officer.assigned_cases', page=p, status=current_status, search=search) }}">{{ p }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                                {% endif %}
+                            {% endfor %}
+                            {% if cases.has_next %}
+                                <li class="page-item"><a class="page-link" href="{{ url_for('officer.assigned_cases', page=cases.next_num, status=current_status, search=search) }}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center p-4 mb-3 text-muted">
+                        <i class="fas fa-search fs-2"></i>
+                    </div>
+                    <h6 class="fw-bold text-dark">No Cases Found</h6>
+                    <p class="text-muted small mb-0">No cases matched your filter criteria.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,90 +1,117 @@
 {% extends "base.html" %}
 
+{% block title %}Citizen Registration — CivicShield AI{% endblock %}
+
 {% block content %}
-<div class="container py-5">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-7">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-primary text-white text-center py-3">
-                    <h3 class="mb-0"><i class="fas fa-user-plus me-2"></i>Register Account</h3>
+        <div class="col-lg-6 col-md-8">
+            <div class="card card-civic p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <img src="{{ url_for('static', filename='images/civicshield-icon.png') }}" alt="CivicShield AI" style="height: 52px; width: 52px; object-fit: contain;" class="mb-2">
+                    <h3 class="fw-bold text-dark mb-1">Create Citizen Account</h3>
+                    <p class="text-muted small">Register to file incident reports, attach evidence, and track investigation updates.</p>
                 </div>
-                <div class="card-body p-4">
-                    <form method="POST" action="">
-                        {{ form.hidden_tag() }}
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form.username.label(class="form-label") }}
-                                {{ form.username(class="form-control", placeholder="Choose a username") }}
-                                {% for error in form.username.errors %}
-                                    <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                {{ form.email.label(class="form-label") }}
-                                {{ form.email(class="form-control", placeholder="your@email.com") }}
-                                {% for error in form.email.errors %}
-                                    <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form.full_name.label(class="form-label") }}
-                                {{ form.full_name(class="form-control", placeholder="Full name") }}
-                                {% for error in form.full_name.errors %}
-                                    <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                {{ form.phone.label(class="form-label") }}
-                                {{ form.phone(class="form-control", placeholder="Phone number") }}
-                                {% for error in form.phone.errors %}
-                                    <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.aadhar_number.label(class="form-label") }}
-                            {{ form.aadhar_number(class="form-control", placeholder="12-digit Aadhar number") }}
-                            {% for error in form.aadhar_number.errors %}
-                                <span class="text-danger">{{ error }}</span>
+
+                <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                        {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else ""), placeholder="e.g. John Doe", required=True) }}
+                        {% for error in form.full_name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                            {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), placeholder="e.g. jdoe24", required=True) }}
+                            {% for error in form.username.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form.password.label(class="form-label") }}
-                                {{ form.password(class="form-control", placeholder="Password") }}
-                                {% for error in form.password.errors %}
-                                    <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                {{ form.confirm_password.label(class="form-label") }}
-                                {{ form.confirm_password(class="form-control", placeholder="Confirm password") }}
-                                {% for error in form.confirm_password.errors %}
-                                    <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">Mobile Phone <span class="text-danger">*</span></label>
+                            {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="e.g. 9876543210", required=True) }}
+                            {% for error in form.phone.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
                         </div>
-                        
-                        <div class="d-grid gap-2">
-                            {{ form.submit(class="btn btn-primary btn-lg") }}
-                        </div>
-                    </form>
-                    
-                    <div class="text-center mt-4">
-                        <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login here</a></p>
                     </div>
-                </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="name@example.com", required=True) }}
+                        {% for error in form.email.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text small text-muted">Used for critical complaint notifications and verification updates.</div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Min. 6 characters", required=True, id="passwordField") }}
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('passwordField', 'togglePassIcon1')">
+                                    <i class="fas fa-eye" id="togglePassIcon1"></i>
+                                </button>
+                                {% for error in form.password.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="confirm_password" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else ""), placeholder="Re-enter password", required=True, id="confirmPasswordField") }}
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('confirmPasswordField', 'togglePassIcon2')">
+                                    <i class="fas fa-eye" id="togglePassIcon2"></i>
+                                </button>
+                                {% for error in form.confirm_password.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light border small text-muted mb-4 d-flex align-items-center gap-2">
+                        <i class="fas fa-user-shield text-primary fs-5"></i>
+                        <div><strong>Privacy First:</strong> No Aadhaar card or sensitive biometric identity is required to register.</div>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        {{ form.submit(class="btn btn-civic-primary btn-lg") }}
+                    </div>
+
+                    <div class="text-center text-muted small">
+                        Already have an account? <a href="{{ url_for('auth.login') }}" class="text-primary fw-semibold">Sign In</a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePasswordVisibility(fieldId, iconId) {
+    const field = document.getElementById(fieldId);
+    const icon = document.getElementById(iconId);
+    if (field && icon) {
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+}
+</script>
 {% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error (500) — CivicShield AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center" style="max-width: 600px;">
+    <div class="rounded-circle bg-danger-subtle text-danger d-inline-flex align-items-center justify-content-center p-4 mb-3 fs-1" style="width: 80px; height: 80px;">
+        <i class="fas fa-server"></i>
+    </div>
+    <h3 class="fw-bold text-dark mb-2">500 — Internal Server Error</h3>
+    <p class="text-muted small mb-4">
+        An unexpected server error occurred while processing your request. The incident has been recorded in the system audit logs.
+    </p>
+    <div class="d-flex justify-content-center gap-2">
+        <a href="{{ url_for('auth.index') }}" class="btn btn-civic-primary">Return to Portal Home</a>
+    </div>
+</div>
+{% endblock %}

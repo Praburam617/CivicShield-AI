@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Complaint #{{ report.complaint_number }} — Admin Console{% endblock %}
+
+{% block content %}
+<div class="container py-3" style="max-width: 980px;">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Admin Console</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_complaints') }}">All Complaints</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ report.complaint_number }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="card card-civic p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-dark text-white">ADMINISTRATION DOCKET</span>
+                    <span class="text-muted small">&bull; Submitted {{ report.created_at.strftime('%Y-%m-%d %H:%M UTC') }}</span>
+                </div>
+                <h3 class="fw-bold text-dark mb-1">{{ report.title }}</h3>
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                    <span class="badge bg-primary text-white">{{ report.crime_category }}</span>
+                    {% set st_class = report.status.lower().replace(' ', '-') %}
+                    <span class="badge-status status-{{ st_class }}">{{ report.status }}</span>
+                    <span class="text-muted small ms-2"><i class="fas fa-building me-1"></i>{{ report.police_station }} ({{ report.district }})</span>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('user.export_complaint_pdf', report_id=report.id) }}" class="btn btn-civic-secondary">
+                    <i class="fas fa-file-pdf text-danger me-1"></i> Docket PDF
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-7">
+            <!-- Description -->
+            <div class="card card-civic p-4 mb-4">
+                <h5 class="fw-bold mb-3 pb-2 border-bottom text-dark">
+                    <i class="fas fa-file-lines text-primary me-2"></i>Incident Description
+                </h5>
+                <p class="text-dark small lh-base mb-0" style="white-space: pre-wrap;">{{ report.description }}</p>
+            </div>
+
+            <!-- Evidence Files -->
+            <div class="card card-civic p-4 mb-4">
+                <h5 class="fw-bold mb-3 pb-2 border-bottom text-dark d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-paperclip text-primary me-2"></i>Attached Evidence ({{ report.evidence_items|length }})</span>
+                </h5>
+                {% if report.evidence_items %}
+                    <div class="row g-2">
+                        {% for ev in report.evidence_items %}
+                            <div class="col-sm-6">
+                                <div class="border rounded p-2 bg-light d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-2 text-truncate me-2">
+                                        {% if 'pdf' in ev.file_type %}
+                                            <i class="fas fa-file-pdf text-danger fs-3"></i>
+                                        {% else %}
+                                            <i class="fas fa-file-image text-primary fs-3"></i>
+                                        {% endif %}
+                                        <div class="text-truncate">
+                                            <div class="small fw-semibold text-truncate" title="{{ ev.original_filename }}">{{ ev.original_filename }}</div>
+                                            <div class="text-muted" style="font-size: 0.725rem;">
+                                                {% if ev.file_size %}{{ (ev.file_size / 1024)|round(1) }} KB{% else %}Attachment{% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ url_for('evidence.view_evidence', evidence_id=ev.id) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('evidence.view_evidence', evidence_id=ev.id, download=1) }}" class="btn btn-sm btn-outline-secondary" title="Download">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small mb-0">No evidence attached by complainant.</p>
+                {% endif %}
+            </div>
+
+            <!-- Case Update History -->
+            <div class="card card-civic p-4">
+                <h5 class="fw-bold mb-3 pb-2 border-bottom text-dark">
+                    <i class="fas fa-timeline text-primary me-2"></i>Full Case Timeline History
+                </h5>
+                <div class="timeline-civic">
+                    {% for upd in report.updates %}
+                        <div class="timeline-item">
+                            <div class="timeline-dot {% if upd.is_internal %}border-secondary{% else %}completed{% endif %}"></div>
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <div>
+                                    <span class="badge-status status-{{ upd.status.lower().replace(' ', '-') }}">
+                                        {{ upd.status }}
+                                    </span>
+                                    {% if upd.is_internal %}
+                                        <span class="badge bg-secondary ms-1" style="font-size: 0.65rem;">INTERNAL NOTE</span>
+                                    {% endif %}
+                                </div>
+                                <span class="text-muted" style="font-size: 0.75rem;">
+                                    {{ upd.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                </span>
+                            </div>
+                            <p class="small mb-0 mt-1 {% if upd.is_internal %}bg-warning-subtle text-dark border-warning{% else %}bg-light text-dark{% endif %} p-2 rounded border" style="line-height: 1.4;">
+                                {{ upd.remarks }}
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Officer Assignment & Status Form -->
+        <div class="col-lg-5">
+            <!-- Complainant Identity -->
+            <div class="card card-civic p-3 mb-4">
+                <h6 class="fw-bold mb-3 pb-2 border-bottom text-dark"><i class="fas fa-user text-primary me-1"></i>Complainant Record</h6>
+                <div class="small d-flex flex-column gap-2">
+                    <div>
+                        <div class="text-muted" style="font-size: 0.75rem;">FULL NAME</div>
+                        <div class="fw-bold text-dark">{{ report.complainant.full_name }}</div>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.75rem;">ACCOUNT INFO</div>
+                        <div class="fw-semibold text-dark">{{ report.complainant.username }} &bull; {{ report.complainant.email }}</div>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.75rem;">PHONE NUMBER</div>
+                        <div class="fw-semibold text-dark">{{ report.complainant.phone or 'Not provided' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assign Investigating Officer -->
+            <div class="card card-civic p-3 mb-4">
+                <div class="d-flex align-items-center justify-content-between pb-2 border-bottom mb-3">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i class="fas fa-id-badge text-primary me-1"></i>Assign Investigating Officer
+                    </h6>
+                    <span class="badge bg-light text-dark border">
+                        <i class="fas fa-building me-1"></i>{{ report.police_station }}
+                    </span>
+                </div>
+
+                <!-- Jurisdiction Notice -->
+                <div class="alert alert-light border py-2 px-3 small mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted">Station Jurisdiction:</span>
+                            <strong class="text-primary ms-1">{{ report.police_station }}</strong>
+                        </div>
+                    </div>
+                    <div class="text-muted mt-1" style="font-size: 0.725rem;">
+                        Showing active officers from this station directory.
+                    </div>
+                </div>
+
+                <div class="small mb-3">
+                    <span class="text-muted">Currently Assigned: </span>
+                    <strong class="text-dark">
+                        {% if report.assigned_officer_profile %}
+                            {{ report.assigned_officer_profile.designation }} {{ report.assigned_officer_profile.name }} 
+                            <span class="text-muted">({{ report.assigned_officer_profile.badge_number }})</span>
+                            {% if report.assigned_officer_profile.has_account %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size: 0.65rem;">Login Active</span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-1" style="font-size: 0.65rem;">Directory Only</span>
+                            {% endif %}
+                        {% elif report.assigned_officer %}
+                            {{ report.assigned_officer }}
+                        {% else %}
+                            <span class="badge bg-warning-subtle text-warning-emphasis">Unassigned</span>
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <form method="POST" action="{{ url_for('admin.assign_officer', report_id=report.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Select Station Officer</label>
+                        <select name="officer_profile_id" class="form-select form-select-sm" required>
+                            <option value="">-- Choose Officer ({{ station_officers|length }} Available) --</option>
+                            {% for off in station_officers %}
+                                <option value="{{ off.id }}" {% if report.officer_profile_id == off.id %}selected{% endif %}>
+                                    {{ off.designation }} {{ off.name }} ({{ off.badge_number }}) &bull; Active Cases: {{ off.active_case_count }} [{% if off.has_account %}Login Active{% else %}Directory Only / No Login{% endif %}]
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text small text-muted" style="font-size: 0.725rem;">
+                            Officers without logins can be assigned administratively. Provision individual logins via <a href="{{ url_for('admin.manage_officers') }}" class="text-primary text-decoration-none">Manage Officers</a>.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Assignment Instructions / Notes</label>
+                        <textarea name="notes" class="form-control form-control-sm" rows="2" placeholder="e.g. Conduct preliminary investigation and examine scene within 48 hours..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-civic-primary btn-sm w-100">
+                        <i class="fas fa-user-check me-1"></i> Confirm Officer Assignment
+                    </button>
+                </form>
+            </div>
+
+            <!-- Administrative Status Update -->
+            <div class="card card-civic p-3">
+                <h6 class="fw-bold mb-3 pb-2 border-bottom text-dark">
+                    <i class="fas fa-pen-to-square text-teal me-1"></i>Administrative Status Override
+                </h6>
+                <form method="POST" action="{{ url_for('admin.update_complaint', report_id=report.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Set Status</label>
+                        <select name="status" class="form-select form-select-sm" required>
+                            <option value="Pending" {% if report.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Under Investigation" {% if report.status == 'Under Investigation' %}selected{% endif %}>Under Investigation</option>
+                            <option value="Evidence Collected" {% if report.status == 'Evidence Collected' %}selected{% endif %}>Evidence Collected</option>
+                            <option value="Action Required" {% if report.status == 'Action Required' %}selected{% endif %}>Action Required</option>
+                            <option value="Resolved" {% if report.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                            <option value="Rejected" {% if report.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                            <option value="Closed" {% if report.status == 'Closed' %}selected{% endif %}>Closed</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Administrative Remarks</label>
+                        <textarea name="remarks" class="form-control form-control-sm" rows="3" placeholder="Notes explaining status transition...">{{ report.admin_remarks or '' }}</textarea>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_internal" value="y" class="form-check-input" id="adminInternalCheck">
+                        <label class="form-check-label small text-muted" for="adminInternalCheck">Internal administrative note</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-civic-teal btn-sm w-100">
+                        <i class="fas fa-save me-1"></i> Save Administrative Update
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

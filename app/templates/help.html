@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Help & Frequently Asked Questions — CivicShield AI{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 900px;">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('auth.index') }}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Help & FAQ</li>
+        </ol>
+    </nav>
+
+    <div class="card card-civic p-4 p-md-5 mb-4">
+        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+            <div class="brand-badge bg-primary text-white rounded-3 p-3 fs-4">
+                <i class="fas fa-circle-question"></i>
+            </div>
+            <div>
+                <h3 class="fw-bold mb-1">Citizen Assistance & Documentation</h3>
+                <p class="text-muted small mb-0">Learn how to register, file complaints, attach valid evidence, and track investigation progress.</p>
+            </div>
+        </div>
+
+        <!-- Demonstration Notice Banner -->
+        <div class="alert alert-warning d-flex align-items-start gap-2 mb-4" role="alert">
+            <i class="fas fa-triangle-exclamation fs-5 mt-1"></i>
+            <div class="small">
+                <strong>Demonstration & Portfolio Platform:</strong> CivicShield AI is an educational technology system showcasing full-stack Python engineering, relational database management, and machine learning integration. In an immediate police emergency, dial <strong>112</strong> or visit your local police station.
+            </div>
+        </div>
+
+        <!-- Section 1: Filing Complaints -->
+        <div class="mb-5">
+            <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                <i class="fas fa-file-pen text-primary me-2"></i>1. How to File an Incident Complaint
+            </h5>
+            <p class="text-muted small">
+                CivicShield AI breaks down complaint filing into a guided 4-step wizard:
+            </p>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="border rounded p-3 bg-light h-100">
+                        <h6 class="fw-bold small text-primary mb-1">Step 1 — Incident Narrative</h6>
+                        <p class="text-muted small mb-0">Provide an accurate title, incident date/time, and clear narrative. Our machine learning system will discreetly analyze the text and suggest the most applicable crime category.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border rounded p-3 bg-light h-100">
+                        <h6 class="fw-bold small text-primary mb-1">Step 2 — Location & Station</h6>
+                        <p class="text-muted small mb-0">Select your district, specify the landmark or exact street address, and choose the jurisdiction police station responsible for the area.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border rounded p-3 bg-light h-100">
+                        <h6 class="fw-bold small text-primary mb-1">Step 3 — Evidence Documents</h6>
+                        <p class="text-muted small mb-0">Attach supporting evidence such as digital photos of damage, transaction invoices, or PDF records. Preview files or remove unwanted ones prior to final submission.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border rounded p-3 bg-light h-100">
+                        <h6 class="fw-bold small text-primary mb-1">Step 4 — Review & Reference</h6>
+                        <p class="text-muted small mb-0">Review all entered details, confirm accuracy, and submit to generate your unique tracking reference number (e.g. <code>CS-2026-XXXXXX</code>).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Evidence Guidelines -->
+        <div class="mb-5">
+            <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                <i class="fas fa-file-shield text-primary me-2"></i>2. Evidence Requirements & Security
+            </h5>
+            <p class="text-muted small">
+                Quality evidence expedites investigation. Follow these standards:
+            </p>
+            <ul class="text-muted small">
+                <li><strong>Permitted File Formats:</strong> PNG, JPG, JPEG, WEBP, and PDF.</li>
+                <li><strong>Size Limitations:</strong> Up to 16 MB per file. Multiple files can be attached to a single complaint.</li>
+                <li><strong>Protected Server Storage:</strong> Uploaded evidence is stored in private, protected directories—never in public web static folders.</li>
+                <li><strong>Access Control:</strong> Evidence can only be accessed and downloaded by the complainant who uploaded it, the assigned investigating officer, or authorized administrators. Every download is logged in the audit trail.</li>
+            </ul>
+        </div>
+
+        <!-- Section 3: Complaint Status Glossary -->
+        <div class="mb-5">
+            <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                <i class="fas fa-bars-progress text-primary me-2"></i>3. What Does Each Status Mean?
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm align-middle small">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 25%;">Status Badge</th>
+                            <th>Operational Meaning</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge-status status-pending">Pending</span></td>
+                            <td class="text-muted">Complaint has been registered and is awaiting initial station review and verification.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-status status-investigating">Under Investigation</span></td>
+                            <td class="text-muted">Complaint is verified and assigned to an investigating officer actively handling the case.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-status status-evidence-collected">Evidence Collected</span></td>
+                            <td class="text-muted">Key witness statements, forensic or document proofs, and digital records have been gathered.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-status status-action-required">Action Required</span></td>
+                            <td class="text-muted">The investigating officer requires additional information or document copies from the complainant.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-status status-resolved">Resolved</span></td>
+                            <td class="text-muted">Investigation concluded, report filed, and appropriate administrative or legal action taken.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-status status-rejected">Rejected</span></td>
+                            <td class="text-muted">Complaint evaluated and closed (e.g. jurisdiction mismatch, non-criminal dispute, or duplicate submission) with official remarks provided.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section 4: Live Interactive Assistance -->
+        <div class="border rounded p-4 bg-light d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
+            <div>
+                <h6 class="fw-bold mb-1">Need Interactive Help in Tamil or English?</h6>
+                <p class="text-muted small mb-0">Our built-in bilingual assistant provides instant answers to common questions in தமிழ் and English.</p>
+            </div>
+            <button type="button" class="btn btn-civic-primary btn-open-assistant text-nowrap">
+                <i class="fas fa-hands-helping me-1"></i> Open Help Desk (உதவி)
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

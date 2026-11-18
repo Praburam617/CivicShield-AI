@@ -1,0 +1,70 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+civicenv/
+myenv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Databases & Backups
+instance/*.db
+instance/*.db.*
+instance/*.bak
+instance/*.sqlite
+instance/*.sqlite3
+*.db
+*.sqlite
+*.sqlite3
+scratch/
+
+# Uploads & User data
+instance/protected_uploads/*
+!instance/protected_uploads/.gitkeep
+instance/protected_uploads_backup/
+instance/test_uploads/
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+
+# Environment variables & Local configuration
+.env
+.env.local
+.env.*.local
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Operating System & IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini

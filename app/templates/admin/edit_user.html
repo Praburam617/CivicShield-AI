@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Edit User Permissions — Admin Console{% endblock %}
+
+{% block content %}
+<div class="container py-3" style="max-width: 650px;">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Admin Console</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_users') }}">Manage Users</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit {{ user.username }}</li>
+        </ol>
+    </nav>
+
+    <div class="card card-civic p-4 p-md-5">
+        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+            <div class="brand-badge bg-primary text-white rounded-3 p-3 fs-4">
+                <i class="fas fa-user-gear"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold mb-1">User Permissions & Role</h4>
+                <p class="text-muted small mb-0">{{ user.full_name }} (<code>@{{ user.username }}</code> &bull; {{ user.email }})</p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('admin.edit_user', user_id=user.id) }}">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                <label for="role" class="form-label">System Role <span class="text-danger">*</span></label>
+                {{ form.role(class="form-select", id="userRoleSelect") }}
+            </div>
+
+            <div class="mb-3">
+                <label for="badge_number" class="form-label">Police Badge / ID Number</label>
+                {{ form.badge_number(class="form-control", placeholder="e.g. TN-INSP-204 (Required for officers)") }}
+            </div>
+
+            <div class="mb-3">
+                <label for="department" class="form-label">Department / Wing</label>
+                {{ form.department(class="form-control", placeholder="e.g. Cyber Crime Wing, Law & Order, Crime Branch") }}
+            </div>
+
+            <div class="mb-3">
+                <label for="police_station" class="form-label">Designated Police Station</label>
+                {{ form.police_station(class="form-select") }}
+            </div>
+
+            <div class="mb-4 form-check">
+                {{ form.is_active(class="form-check-input", id="isActiveCheck") }}
+                <label class="form-check-label text-dark fw-medium small" for="isActiveCheck">
+                    Account Active (Uncheck to suspend login)
+                </label>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                <a href="{{ url_for('admin.manage_users') }}" class="btn btn-civic-secondary">Cancel</a>
+                {{ form.submit(class="btn btn-civic-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

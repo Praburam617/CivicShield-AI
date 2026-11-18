@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Officer Dashboard — CivicShield AI{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary text-white">POLICE OFFICER CONSOLE</span>
+                <span class="text-muted small">&bull; Badge: {{ current_user.badge_number or 'Assigned Staff' }}</span>
+            </div>
+            <h3 class="fw-bold text-dark mb-1">
+                Welcome, {{ current_user.full_name or current_user.username }}
+            </h3>
+            <p class="text-muted small mb-0">Station: <strong>{{ current_user.police_station or 'Central Police Station' }}</strong></p>
+        </div>
+        <div>
+            <a href="{{ url_for('officer.assigned_cases') }}" class="btn btn-civic-primary">
+                <i class="fas fa-briefcase me-1"></i> View All Assigned Cases
+            </a>
+        </div>
+    </div>
+
+    <!-- Case Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card card-civic p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Assigned Cases</div>
+                        <h2 class="fw-bold text-dark mb-0 mt-1">{{ total_assigned }}</h2>
+                    </div>
+                    <div class="rounded-3 bg-light p-2 text-primary fs-4">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card card-civic p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Active Inquiries</div>
+                        <h2 class="fw-bold text-primary mb-0 mt-1">{{ under_investigation }}</h2>
+                    </div>
+                    <div class="rounded-3 bg-light p-2 text-primary fs-4">
+                        <i class="fas fa-magnifying-glass"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card card-civic p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Action Required</div>
+                        <h2 class="fw-bold text-danger mb-0 mt-1">{{ action_required }}</h2>
+                    </div>
+                    <div class="rounded-3 bg-light p-2 text-danger fs-4">
+                        <i class="fas fa-user-clock"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card card-civic p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Resolved / Closed</div>
+                        <h2 class="fw-bold text-success mb-0 mt-1">{{ resolved_count }}</h2>
+                    </div>
+                    <div class="rounded-3 bg-light p-2 text-success fs-4">
+                        <i class="fas fa-circle-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Cases Table -->
+    <div class="card card-civic">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-dark"><i class="fas fa-folder-open me-2 text-primary"></i>Recently Assigned & Updated Cases</span>
+            <a href="{{ url_for('officer.assigned_cases') }}" class="small text-primary text-decoration-none fw-semibold">All Cases <i class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+        <div class="card-body p-0">
+            {% if recent_cases %}
+                <div class="table-responsive">
+                    <table class="table table-civic mb-0">
+                        <thead>
+                            <tr>
+                                <th>Complaint Reference</th>
+                                <th>Category & Title</th>
+                                <th>Complainant</th>
+                                <th>Incident Date</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in recent_cases %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('officer.view_case', report_id=c.id) }}" class="fw-bold text-primary text-decoration-none">
+                                            {{ c.complaint_number }}
+                                        </a>
+                                        <div class="text-muted" style="font-size: 0.75rem;">
+                                            Updated {{ c.updated_at.strftime('%Y-%m-%d %H:%M') if c.updated_at else c.created_at.strftime('%Y-%m-%d') }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark text-truncate" style="max-width: 250px;" title="{{ c.title }}">
+                                            {{ c.title }}
+                                        </div>
+                                        <span class="badge bg-light text-secondary border" style="font-size: 0.725rem;">
+                                            {{ c.crime_category }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-semibold text-dark">{{ c.complainant.full_name }}</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">{{ c.complainant.phone or c.complainant.email }}</div>
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ c.incident_date.strftime('%Y-%m-%d %H:%M') if c.incident_date else "N/A" }}
+                                    </td>
+                                    <td>
+                                        {% set st_class = c.status.lower().replace(' ', '-') %}
+                                        <span class="badge-status status-{{ st_class }}">
+                                            {{ c.status }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('officer.view_case', report_id=c.id) }}" class="btn btn-sm btn-civic-primary">
+                                            <i class="fas fa-folder-open me-1"></i> Manage Case
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center p-4 mb-3 text-muted">
+                        <i class="fas fa-inbox fs-2"></i>
+                    </div>
+                    <h6 class="fw-bold text-dark">No Active Cases Assigned</h6>
+                    <p class="text-muted small mb-0">You currently have no complaints assigned to your docket.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

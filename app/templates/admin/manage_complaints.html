@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Complaint Management & Search — Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-2">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Admin Console</a></li>
+            <li class="breadcrumb-item active" aria-current="page">All Complaints</li>
+        </ol>
+    </nav>
+
+    <!-- Header & Export Actions -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">
+                <i class="fas fa-folder-tree text-primary me-2"></i>Comprehensive Complaint Repository
+            </h3>
+            <p class="text-muted small mb-0">Search, filter, assign investigating officers, and export official reports.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('admin.export_csv', **filters) }}" class="btn btn-civic-secondary">
+                <i class="fas fa-file-csv me-1 text-success"></i> Export CSV
+            </a>
+            <a href="{{ url_for('admin.export_pdf', **filters) }}" class="btn btn-civic-secondary">
+                <i class="fas fa-file-pdf me-1 text-danger"></i> Export PDF Report
+            </a>
+        </div>
+    </div>
+
+    <!-- Advanced Filter & Search Box -->
+    <div class="card card-civic p-3 mb-4">
+        <form method="GET" action="{{ url_for('admin.manage_complaints') }}" class="row g-2">
+            <!-- Keyword Search -->
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">Search Keywords</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Ref, title, complainant, address..." value="{{ filters.search }}">
+                </div>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="col-md-2 col-6">
+                <label class="form-label small text-muted mb-1">Status</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="All">All Statuses</option>
+                    <option value="Pending" {% if filters.status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Under Investigation" {% if filters.status == 'Under Investigation' %}selected{% endif %}>Under Investigation</option>
+                    <option value="Evidence Collected" {% if filters.status == 'Evidence Collected' %}selected{% endif %}>Evidence Collected</option>
+                    <option value="Action Required" {% if filters.status == 'Action Required' %}selected{% endif %}>Action Required</option>
+                    <option value="Resolved" {% if filters.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                    <option value="Rejected" {% if filters.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+
+            <!-- Crime Category Filter -->
+            <div class="col-md-2 col-6">
+                <label class="form-label small text-muted mb-1">Crime Category</label>
+                <select name="category" class="form-select form-select-sm">
+                    <option value="All">All Categories</option>
+                    {% for cat in crime_categories_list %}
+                        <option value="{{ cat }}" {% if filters.category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- District Filter -->
+            <div class="col-md-2 col-6">
+                <label class="form-label small text-muted mb-1">District</label>
+                <select name="district" class="form-select form-select-sm">
+                    <option value="All">All Districts</option>
+                    {% for dist in districts_list %}
+                        <option value="{{ dist }}" {% if filters.district == dist %}selected{% endif %}>{{ dist }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Station Filter -->
+            <div class="col-md-3 col-6">
+                <label class="form-label small text-muted mb-1">Police Station</label>
+                <select name="station" class="form-select form-select-sm">
+                    <option value="All">All Police Stations</option>
+                    {% for st in police_stations_list %}
+                        <option value="{{ st }}" {% if filters.station == st %}selected{% endif %}>{{ st }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Date Range From -->
+            <div class="col-md-3 col-6">
+                <label class="form-label small text-muted mb-1">Date From</label>
+                <input type="date" name="date_from" class="form-control form-control-sm" value="{{ filters.date_from }}">
+            </div>
+
+            <!-- Date Range To -->
+            <div class="col-md-3 col-6">
+                <label class="form-label small text-muted mb-1">Date To</label>
+                <input type="date" name="date_to" class="form-control form-control-sm" value="{{ filters.date_to }}">
+            </div>
+
+            <!-- Sort By -->
+            <div class="col-md-3 col-6">
+                <label class="form-label small text-muted mb-1">Sort By</label>
+                <select name="sort_by" class="form-select form-select-sm">
+                    <option value="created_at_desc" {% if filters.sort_by == 'created_at_desc' %}selected{% endif %}>Date Filed (Newest First)</option>
+                    <option value="created_at_asc" {% if filters.sort_by == 'created_at_asc' %}selected{% endif %}>Date Filed (Oldest First)</option>
+                    <option value="incident_date_desc" {% if filters.sort_by == 'incident_date_desc' %}selected{% endif %}>Incident Date</option>
+                    <option value="status" {% if filters.sort_by == 'status' %}selected{% endif %}>Status Alphabetical</option>
+                </select>
+            </div>
+
+            <!-- Actions -->
+            <div class="col-md-3 col-6 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-civic-primary btn-sm flex-grow-1">
+                    <i class="fas fa-filter me-1"></i> Apply Filters
+                </button>
+                <a href="{{ url_for('admin.manage_complaints') }}" class="btn btn-civic-secondary btn-sm">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card card-civic">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="small fw-semibold text-muted">
+                Showing {{ reports.items|length }} of {{ reports.total }} Filtered Complaints
+            </span>
+        </div>
+        <div class="card-body p-0">
+            {% if reports.items %}
+                <div class="table-responsive">
+                    <table class="table table-civic mb-0">
+                        <thead>
+                            <tr>
+                                <th>Complaint Ref</th>
+                                <th>Category & Title</th>
+                                <th>Location & Station</th>
+                                <th>Complainant</th>
+                                <th>Incident Date</th>
+                                <th>Status</th>
+                                <th>Officer Assigned</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in reports.items %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('admin.view_complaint', report_id=c.id) }}" class="fw-bold text-primary text-decoration-none">
+                                            {{ c.complaint_number }}
+                                        </a>
+                                        <div class="text-muted" style="font-size: 0.725rem;">
+                                            {{ c.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark text-truncate" style="max-width: 220px;" title="{{ c.title }}">
+                                            {{ c.title }}
+                                        </div>
+                                        <span class="badge bg-light text-secondary border" style="font-size: 0.725rem;">
+                                            {{ c.crime_category }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-semibold text-dark">{{ c.police_station }}</div>
+                                        <div class="text-muted" style="font-size: 0.725rem;">{{ c.district }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-semibold text-dark">{{ c.complainant.full_name }}</div>
+                                        <div class="text-muted" style="font-size: 0.725rem;">{{ c.complainant.username }}</div>
+                                    </td>
+                                    <td class="small text-muted">
+                                        {{ c.incident_date.strftime('%Y-%m-%d %H:%M') if c.incident_date else "N/A" }}
+                                    </td>
+                                    <td>
+                                        {% set st_class = c.status.lower().replace(' ', '-') %}
+                                        <span class="badge-status status-{{ st_class }}">
+                                            {{ c.status }}
+                                        </span>
+                                    </td>
+                                    <td class="small">
+                                        {% if c.officer_user %}
+                                            <span class="fw-semibold text-dark"><i class="fas fa-id-badge text-primary me-1"></i>{{ c.officer_user.full_name }}</span>
+                                        {% elif c.assigned_officer %}
+                                            <span class="text-dark">{{ c.assigned_officer }}</span>
+                                        {% else %}
+                                            <span class="badge bg-warning-subtle text-warning-emphasis">Unassigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('admin.view_complaint', report_id=c.id) }}" class="btn btn-sm btn-outline-secondary" title="View & Manage">
+                                            <i class="fas fa-gear"></i>
+                                        </a>
+                                        <a href="{{ url_for('user.export_complaint_pdf', report_id=c.id) }}" class="btn btn-sm btn-outline-secondary ms-1" title="Docket PDF">
+                                            <i class="fas fa-file-pdf text-danger"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if reports.pages > 1 %}
+                    <div class="p-3 border-top d-flex justify-content-between align-items-center">
+                        <span class="small text-muted">Page {{ reports.page }} of {{ reports.pages }}</span>
+                        <ul class="pagination pagination-sm mb-0">
+                            {% if reports.has_prev %}
+                                <li class="page-item"><a class="page-link" href="{{ url_for('admin.manage_complaints', page=reports.prev_num, **filters) }}">Previous</a></li>
+                            {% endif %}
+                            {% for p in reports.iter_pages() %}
+                                {% if p %}
+                                    <li class="page-item {% if p == reports.page %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('admin.manage_complaints', page=p, **filters) }}">{{ p }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                                {% endif %}
+                            {% endfor %}
+                            {% if reports.has_next %}
+                                <li class="page-item"><a class="page-link" href="{{ url_for('admin.manage_complaints', page=reports.next_num, **filters) }}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center p-4 mb-3 text-muted">
+                        <i class="fas fa-search fs-2"></i>
+                    </div>
+                    <h6 class="fw-bold text-dark">No Complaints Found</h6>
+                    <p class="text-muted small mb-0">No records matched your search query or filter criteria.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

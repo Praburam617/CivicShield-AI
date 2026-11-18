@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Provision Login Account — Admin Console{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_officers') }}">Manage Officers</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Provision Account</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card card-civic shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3 pb-3 border-bottom mb-4">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fs-4 fw-bold" style="width: 52px; height: 52px;">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-1 fw-bold text-dark">Provision Officer Login Credentials</h4>
+                            <p class="text-muted small mb-0">Grant system access to an unlinked station officer profile.</p>
+                        </div>
+                    </div>
+
+                    <!-- Target Officer Summary Card -->
+                    <div class="p-3 bg-light rounded border mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">{{ officer.designation }} {{ officer.name }}</h6>
+                                <div class="text-muted small">
+                                    <span class="badge bg-secondary-subtle text-secondary font-monospace me-1">{{ officer.badge_number }}</span>
+                                    <span>{{ officer.department }}</span> &bull; 
+                                    <strong>{{ officer.police_station }}</strong>
+                                </div>
+                            </div>
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                Unlinked Profile
+                            </span>
+                        </div>
+                    </div>
+
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <label for="username" class="form-label text-muted small fw-semibold">Assigned Username <span class="text-danger">*</span></label>
+                                {{ form.username(class="form-control font-monospace" + (" is-invalid" if form.username.errors else ""), required=True) }}
+                                {% for error in form.username.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text small text-muted">Unique login handle for the officer portal.</div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="email" class="form-label text-muted small fw-semibold">Official Contact Email <span class="text-danger">*</span></label>
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), required=True) }}
+                                {% for error in form.email.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="password" class="form-label text-muted small fw-semibold">Initial Password <span class="text-danger">*</span></label>
+                                {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Minimum 6 characters", required=True) }}
+                                {% for error in form.password.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text small text-muted">Password will be stored securely hashed using PBKDF2/Werkzeug.</div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ url_for('admin.manage_officers') }}" class="btn btn-outline-secondary">Cancel</a>
+                            {{ form.submit(class="btn btn-civic-primary px-4") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

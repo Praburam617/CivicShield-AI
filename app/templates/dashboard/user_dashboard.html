@@ -1,151 +1,228 @@
 {% extends "base.html" %}
 
+{% block title %}Citizen Dashboard — CivicShield AI{% endblock %}
+
 {% block content %}
-<div class="container-fluid bg-light py-4">
-    <div class="container">
-        <div class="row mb-4">
-            <div class="col-12">
-                <h2><i class="fas fa-tachometer-alt me-2"></i>Welcome, {{ current_user.full_name }}</h2>
-                <p class="text-muted">Track your complaints and file new reports</p>
-            </div>
+<div class="container py-2">
+    <!-- Header with Welcome & Quick Actions -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">
+                <i class="fas fa-hand-wave text-warning me-2"></i>Welcome, {{ current_user.full_name or
+                current_user.username }}
+            </h3>
+            <p class="text-muted small mb-0">Citizen Complaint Management & Incident Tracking Portal</p>
         </div>
-        
-        <!-- Statistics Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3 mb-3">
-                <div class="card bg-primary text-white shadow">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-title">Total Complaints</h6>
-                                <h2 class="mb-0">{{ total_reports }}</h2>
-                            </div>
-                            <i class="fas fa-file-alt fa-3x opacity-50"></i>
-                        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('user.submit_report') }}" class="btn btn-civic-primary">
+                <i class="fas fa-plus-circle me-1"></i> File New Complaint
+            </a>
+            <a href="{{ url_for('user.my_reports') }}" class="btn btn-civic-secondary">
+                <i class="fas fa-list-check me-1"></i> View My Complaints
+            </a>
+            <button type="button" class="btn btn-civic-secondary btn-open-assistant">
+                <i class="fas fa-circle-question text-primary me-1"></i> Get Help (உதவி)
+            </button>
+        </div>
+    </div>
+
+    <!-- Live Statistics Cards (Calculated directly from Database) -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card card-civic p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Total Filed</div>
+                        <h2 class="fw-bold text-dark mb-0 mt-1">{{ total_complaints }}</h2>
                     </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-3">
-                <div class="card bg-warning text-white shadow">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-title">Pending</h6>
-                                <h2 class="mb-0">{{ pending_count }}</h2>
-                            </div>
-                            <i class="fas fa-clock fa-3x opacity-50"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-3">
-                <div class="card bg-info text-white shadow">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-title">Under Investigation</h6>
-                                <h2 class="mb-0">{{ investigating_count }}</h2>
-                            </div>
-                            <i class="fas fa-search fa-3x opacity-50"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-3">
-                <div class="card bg-success text-white shadow">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-title">Resolved</h6>
-                                <h2 class="mb-0">{{ resolved_count }}</h2>
-                            </div>
-                            <i class="fas fa-check-circle fa-3x opacity-50"></i>
-                        </div>
+                    <div class="rounded-3 bg-light p-2 text-primary fs-4">
+                        <i class="fas fa-folder-open"></i>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Action Buttons -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <a href="{{ url_for('user.submit_report') }}" class="btn btn-primary btn-lg">
-                    <i class="fas fa-plus-circle me-2"></i>File New Complaint
-                </a>
-                <a href="{{ url_for('user.track_report') }}" class="btn btn-outline-primary btn-lg ms-2">
-                    <i class="fas fa-search me-2"></i>Track Complaint
-                </a>
-            </div>
-        </div>
-        
-        <!-- Recent Reports -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card shadow">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Complaints</h5>
+
+        <div class="col-6 col-lg-3">
+            <div class="card card-civic p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Pending Review</div>
+                        <h2 class="fw-bold text-warning mb-0 mt-1">{{ pending_count }}</h2>
                     </div>
-                    <div class="card-body">
-                        {% if recent_reports %}
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Complaint No.</th>
-                                            <th>Title</th>
-                                            <th>Category</th>
-                                            <th>Police Station</th>
-                                            <th>Status</th>
-                                            <th>Date</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for report in recent_reports %}
-                                        <tr>
-                                            <td><code>{{ report.complaint_number }}</code></td>
-                                            <td>{{ report.title[:40] }}{% if report.title|length > 40 %}...{% endif %}</td>
-                                            <td>{{ report.crime_category }}</td>
-                                            <td>{{ report.police_station }}</td>
-                                            <td>
-                                                {% if report.status == 'Pending' %}
-                                                    <span class="badge bg-warning">Pending</span>
-                                                {% elif report.status == 'Under Investigation' %}
-                                                    <span class="badge bg-info">Under Investigation</span>
-                                                {% elif report.status == 'Resolved' %}
-                                                    <span class="badge bg-success">Resolved</span>
-                                                {% elif report.status == 'Rejected' %}
-                                                    <span class="badge bg-danger">Rejected</span>
-                                                {% else %}
-                                                    <span class="badge bg-secondary">{{ report.status }}</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>{{ report.created_at.strftime('%d-%m-%Y') }}</td>
-                                            <td>
-                                                <a href="{{ url_for('user.report_detail', report_id=report.id) }}" class="btn btn-sm btn-info">
-                                                    <i class="fas fa-eye"></i> View
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="text-center mt-3">
-                                <a href="{{ url_for('user.my_reports') }}" class="btn btn-link">View All Complaints →</a>
-                            </div>
-                        {% else %}
-                            <div class="text-center py-5">
-                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                <p>No complaints filed yet.</p>
-                                <a href="{{ url_for('user.submit_report') }}" class="btn btn-primary">File Your First Complaint</a>
-                            </div>
-                        {% endif %}
+                    <div class="rounded-3 bg-light p-2 text-warning fs-4">
+                        <i class="fas fa-clock"></i>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card card-civic p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Active Cases</div>
+                        <h2 class="fw-bold text-primary mb-0 mt-1">{{ active_count }}</h2>
+                    </div>
+                    <div class="rounded-3 bg-light p-2 text-primary fs-4">
+                        <i class="fas fa-magnifying-glass-chart"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card card-civic p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Resolved</div>
+                        <h2 class="fw-bold text-success mb-0 mt-1">{{ resolved_count }}</h2>
+                    </div>
+                    <div class="rounded-3 bg-light p-2 text-success fs-4">
+                        <i class="fas fa-circle-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Recent Complaints Column -->
+        <div class="col-lg-8">
+            <div class="card card-civic">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-dark"><i class="fas fa-clock-rotate-left me-2 text-primary"></i>Recent
+                        Complaints</span>
+                    <a href="{{ url_for('user.my_reports') }}"
+                        class="small text-primary text-decoration-none fw-semibold">View All <i
+                            class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_complaints %}
+                    <div class="table-responsive">
+                        <table class="table table-civic mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Complaint Reference</th>
+                                    <th>Title & Category</th>
+                                    <th>Station</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in recent_complaints %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('user.report_detail', report_id=r.id) }}"
+                                            class="fw-bold text-decoration-none text-primary">
+                                            {{ r.complaint_number }}
+                                        </a>
+                                        <div class="text-muted" style="font-size: 0.75rem;">
+                                            {{ r.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark text-truncate" style="max-width: 220px;"
+                                            title="{{ r.title }}">
+                                            {{ r.title }}
+                                        </div>
+                                        <span class="badge bg-light text-secondary border" style="font-size: 0.725rem;">
+                                            {{ r.crime_category }}
+                                        </span>
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ r.police_station }}
+                                    </td>
+                                    <td>
+                                        {% set st_class = r.status.lower().replace(' ', '-') %}
+                                        <span class="badge-status status-{{ st_class }}">
+                                            {{ r.status }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('user.report_detail', report_id=r.id) }}"
+                                            class="btn btn-sm btn-outline-secondary" title="View Dossier">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('user.export_complaint_pdf', report_id=r.id) }}"
+                                            class="btn btn-sm btn-outline-secondary ms-1"
+                                            title="Download Case Docket PDF">
+                                            <i class="fas fa-file-pdf text-danger"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div
+                            class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center p-4 mb-3 text-muted">
+                            <i class="fas fa-folder-open fs-2"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark">No Complaints Filed Yet</h6>
+                        <p class="text-muted small mb-3">You have not submitted any incident reports. If you experienced
+                            or witnessed an incident, file a report.</p>
+                        <a href="{{ url_for('user.submit_report') }}" class="btn btn-civic-primary">
+                            <i class="fas fa-plus me-1"></i> File Your First Complaint
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar / Latest Status Update Card -->
+        <div class="col-lg-4">
+            <!-- Latest Status Update -->
+            <div class="card card-civic p-3 mb-4">
+                <h6 class="fw-bold mb-3 pb-2 border-bottom d-flex align-items-center gap-2">
+                    <i class="fas fa-bell text-primary"></i>
+                    <span>Latest Investigation Update</span>
+                </h6>
+                {% if latest_update %}
+                <div class="small">
+                    <div class="d-flex justify-content-between mb-2">
+                        <a href="{{ url_for('user.report_detail', report_id=latest_update.report_id) }}"
+                            class="fw-bold text-primary text-decoration-none">
+                            {{ latest_update.report.complaint_number }}
+                        </a>
+                        <span class="text-muted" style="font-size: 0.75rem;">{{ latest_update.created_at.strftime('%b
+                            %d, %H:%M') }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge-status status-{{ latest_update.status.lower().replace(' ', '-') }}">
+                            {{ latest_update.status }}
+                        </span>
+                    </div>
+                    <p class="text-muted mb-0 bg-light p-2 rounded border"
+                        style="font-size: 0.825rem; line-height: 1.4;">
+                        {{ latest_update.remarks or 'Status updated by investigating officer.' }}
+                    </p>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted small">
+                    <i class="fas fa-circle-check text-muted fs-3 mb-2 d-block"></i>
+                    No recent status updates on your files.
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Quick Track Search Widget -->
+            <div class="card card-civic p-3">
+                <h6 class="fw-bold mb-2 d-flex align-items-center gap-2">
+                    <i class="fas fa-magnifying-glass text-teal"></i>
+                    <span>Track Complaint</span>
+                </h6>
+                <p class="text-muted small mb-3">Track progress of any submitted report using reference ID.</p>
+                <form action="{{ url_for('user.track_report') }}" method="GET">
+                    <div class="input-group mb-2">
+                        <input type="text" name="complaint_number" class="form-control form-control-sm"
+                            placeholder="e.g. CS-2026-..." required>
+                        <button class="btn btn-civic-teal btn-sm" type="submit">Track</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

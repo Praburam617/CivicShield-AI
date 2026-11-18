@@ -1,195 +1,199 @@
 {% extends "base.html" %}
 
+{% block title %}Case Dossier #{% if report %}{{ report.complaint_number }}{% endif %} — CivicShield AI{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="row">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('user.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('user.my_reports') }}">My Complaints</a></li>
-                    <li class="breadcrumb-item active">Complaint Details</li>
-                </ol>
-            </nav>
+<div class="container py-3" style="max-width: 950px;">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('user.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('user.my_reports') }}">My Complaints</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ report.complaint_number }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header & Actions -->
+    <div class="card card-civic p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-light text-secondary border">Docket Dossier</span>
+                    <span class="text-muted small">&bull; Filed {{ report.created_at.strftime('%B %d, %Y at %H:%M UTC')
+                        }}</span>
+                </div>
+                <h3 class="fw-bold text-dark mb-1">{{ report.title }}</h3>
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                    <span class="badge bg-primary text-white">{{ report.crime_category }}</span>
+                    {% set st_class = report.status.lower().replace(' ', '-') %}
+                    <span class="badge-status status-{{ st_class }}">{{ report.status }}</span>
+                    <span class="text-muted small ms-2"><i class="fas fa-building me-1"></i>{{ report.police_station
+                        }}</span>
+                </div>
+            </div>
+            <div class="d-flex gap-2 text-nowrap">
+                <a href="{{ url_for('user.export_complaint_pdf', report_id=report.id) }}"
+                    class="btn btn-civic-secondary">
+                    <i class="fas fa-file-pdf text-danger me-1"></i> Download Docket PDF
+                </a>
+                <a href="{{ url_for('user.track_report', complaint_number=report.complaint_number) }}"
+                    class="btn btn-civic-primary">
+                    <i class="fas fa-timeline me-1"></i> Live Tracker
+                </a>
+            </div>
         </div>
     </div>
-    
-    <div class="row">
+
+    <div class="row g-4">
+        <!-- Main Case Information Column -->
         <div class="col-lg-8">
-            <div class="card shadow mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>Complaint Details</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong>Complaint Number:</strong>
-                            <p><code class="fs-5">{{ report.complaint_number }}</code></p>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Status:</strong>
-                            <p>
-                                {% if report.status == 'Pending' %}
-                                    <span class="badge bg-warning fs-6">Pending</span>
-                                {% elif report.status == 'Under Investigation' %}
-                                    <span class="badge bg-info fs-6">Under Investigation</span>
-                                {% elif report.status == 'Resolved' %}
-                                    <span class="badge bg-success fs-6">Resolved</span>
-                                {% elif report.status == 'Rejected' %}
-                                    <span class="badge bg-danger fs-6">Rejected</span>
-                                {% else %}
-                                    <span class="badge bg-secondary fs-6">{{ report.status }}</span>
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <strong>Title:</strong>
-                            <p>{{ report.title }}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <strong>Description:</strong>
-                            <p class="bg-light p-3 rounded">{{ report.description }}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong>Crime Category:</strong>
-                            <p>{{ report.crime_category }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Incident Date & Time:</strong>
-                            <p>{{ report.incident_date.strftime('%d-%m-%Y %H:%M') }}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong>Incident Location:</strong>
-                            <p>{{ report.incident_location }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Police Station:</strong>
-                            <p>{{ report.police_station }}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong>Filed On:</strong>
-                            <p>{{ report.created_at.strftime('%d-%m-%Y %H:%M') }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Last Updated:</strong>
-                            <p>{{ report.updated_at.strftime('%d-%m-%Y %H:%M') }}</p>
-                        </div>
-                    </div>
-                    
-                    {% if report.evidence_file %}
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <strong>Evidence:</strong>
-                            <p>
-                                <a href="{{ url_for('static', filename='uploads/' + report.evidence_file) }}" target="_blank" class="btn btn-sm btn-info">
-                                    <i class="fas fa-download"></i> View Evidence
-                                </a>
-                            </p>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    {% if report.assigned_officer %}
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <strong>Assigned Officer:</strong>
-                            <p>{{ report.assigned_officer }}</p>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    {% if report.admin_remarks %}
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <strong>Admin Remarks:</strong>
-                            <p class="bg-warning bg-opacity-10 p-3 rounded">{{ report.admin_remarks }}</p>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
+            <!-- Narrative Card -->
+            <div class="card card-civic p-4 mb-4">
+                <h5 class="fw-bold mb-3 pb-2 border-bottom text-dark">
+                    <i class="fas fa-align-left text-primary me-2"></i>Incident Description
+                </h5>
+                <p class="text-dark small lh-base mb-0" style="white-space: pre-wrap;">{{ report.description }}</p>
             </div>
-        </div>
-        
-        <div class="col-lg-4">
-            <div class="card shadow mb-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Update History</h5>
-                </div>
-                <div class="card-body">
-                    {% if report.updates %}
-                        <div class="timeline">
-                            {% for update in report.updates|reverse %}
-                                <div class="timeline-item mb-3">
-                                    <div class="timeline-badge">
-                                        {% if update.status == 'Pending' %}
-                                            <i class="fas fa-clock text-warning"></i>
-                                        {% elif update.status == 'Under Investigation' %}
-                                            <i class="fas fa-search text-info"></i>
-                                        {% elif update.status == 'Resolved' %}
-                                            <i class="fas fa-check-circle text-success"></i>
-                                        {% else %}
-                                            <i class="fas fa-flag text-secondary"></i>
-                                        {% endif %}
-                                    </div>
-                                    <div class="timeline-content">
-                                        <strong>{{ update.status }}</strong>
-                                        <p class="small text-muted">{{ update.created_at.strftime('%d-%m-%Y %H:%M') }}</p>
-                                        <p class="small">{{ update.remarks }}</p>
+
+            <!-- Supporting Evidence Section -->
+            <div class="card card-civic p-4 mb-4">
+                <h5 class="fw-bold mb-3 pb-2 border-bottom text-dark d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-paperclip text-primary me-2"></i>Attached Supporting Evidence</span>
+                    <span class="badge bg-light text-secondary border" style="font-size: 0.75rem;">{{
+                        report.evidence_items|length }} Attachment(s)</span>
+                </h5>
+                {% if report.evidence_items %}
+                <div class="row g-3">
+                    {% for ev in report.evidence_items %}
+                    <div class="col-sm-6">
+                        <div class="border rounded p-3 bg-light d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2 text-truncate me-2">
+                                {% if 'pdf' in ev.file_type %}
+                                <i class="fas fa-file-pdf text-danger fs-3"></i>
+                                {% else %}
+                                <i class="fas fa-file-image text-primary fs-3"></i>
+                                {% endif %}
+                                <div class="text-truncate">
+                                    <div class="small fw-semibold text-truncate" title="{{ ev.original_filename }}">{{
+                                        ev.original_filename }}</div>
+                                    <div class="text-muted" style="font-size: 0.725rem;">
+                                        {% if ev.file_size %}{{ (ev.file_size / 1024)|round(1) }} KB{% else
+                                        %}Attachment{% endif %}
                                     </div>
                                 </div>
-                                {% if not loop.last %}<hr>{% endif %}
-                            {% endfor %}
+                            </div>
+                            <div class="d-flex gap-1">
+                                <a href="{{ url_for('evidence.view_evidence', evidence_id=ev.id) }}" target="_blank"
+                                    class="btn btn-sm btn-outline-secondary" title="View Document">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('evidence.view_evidence', evidence_id=ev.id, download=1) }}"
+                                    class="btn btn-sm btn-outline-secondary" title="Download">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
                         </div>
-                    {% else %}
-                        <p class="text-muted text-center">No updates yet</p>
-                    {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted small">
+                    <i class="fas fa-file-circle-xmark fs-2 mb-2 d-block"></i>
+                    No photographic or document evidence was attached to this complaint.
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Investigation Timeline History -->
+            <div class="card card-civic p-4">
+                <h5 class="fw-bold mb-4 pb-2 border-bottom text-dark">
+                    <i class="fas fa-timeline text-primary me-2"></i>Investigation & Status Timeline
+                </h5>
+                {% if updates %}
+                <div class="timeline-civic">
+                    {% for upd in updates %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot {% if loop.first %}completed{% endif %}"></div>
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span class="badge-status status-{{ upd.status.lower().replace(' ', '-') }}">
+                                {{ upd.status }}
+                            </span>
+                            <span class="text-muted" style="font-size: 0.75rem;">
+                                {{ upd.created_at.strftime('%Y-%m-%d %H:%M UTC') }}
+                            </span>
+                        </div>
+                        <p class="text-dark small mb-0 mt-1 bg-light p-2 rounded border" style="line-height: 1.4;">
+                            {{ upd.remarks or 'Status updated.' }}
+                        </p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-muted small text-center py-3">No timeline entries yet.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Side Docket Information -->
+        <div class="col-lg-4">
+            <div class="card card-civic p-3 mb-4">
+                <h6 class="fw-bold mb-3 pb-2 border-bottom text-dark">Case Docket Metadata</h6>
+                <div class="d-flex flex-column gap-3 small">
+                    <div>
+                        <div class="text-muted" style="font-size: 0.75rem;">COMPLAINT REFERENCE</div>
+                        <div class="fw-bold text-dark fs-6">{{ report.complaint_number }}</div>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.75rem;">OCCURRENCE DATE & TIME</div>
+                        <div class="fw-semibold text-dark">{{ report.incident_date.strftime('%Y-%m-%d %H:%M') if
+                            report.incident_date else "N/A" }}</div>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.75rem;">DISTRICT</div>
+                        <div class="fw-semibold text-dark">{{ report.district }}</div>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.75rem;">INCIDENT LOCATION</div>
+                        <div class="fw-semibold text-dark">{{ report.incident_location }}</div>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.75rem;">ASSIGNED POLICE STATION</div>
+                        <div class="fw-semibold text-dark">{{ report.police_station }}</div>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.75rem;">ASSIGNED OFFICER</div>
+                        <div class="fw-semibold text-dark">
+                            {% if report.assigned_officer_profile %}
+                            <i class="fas fa-id-badge text-primary me-1"></i>{{ report.assigned_officer_profile.designation }} {{ report.assigned_officer_profile.name }} ({{ report.assigned_officer_profile.badge_number }})
+                            {% elif report.officer_user %}
+                            <i class="fas fa-id-badge text-primary me-1"></i>{{ report.officer_user.full_name }} ({{
+                            report.officer_user.badge_number or 'Staff' }})
+                            {% elif report.assigned_officer %}
+                            <i class="fas fa-id-badge text-primary me-1"></i>{{ report.assigned_officer }}
+                            {% else %}
+                            <span class="text-muted fst-italic">Pending Station Designation</span>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="card shadow">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="fas fa-phone-alt me-2"></i>Need Help?</h5>
-                </div>
-                <div class="card-body">
-                    <p>For any queries regarding your complaint, please contact:</p>
-                    <ul class="list-unstyled">
-                        <li><i class="fas fa-phone me-2"></i> Helpline: 100</li>
-                        <li><i class="fas fa-envelope me-2"></i> Email: support@crimereporting.gov</li>
-                        <li><i class="fas fa-building me-2"></i> {{ report.police_station }}</li>
-                    </ul>
+
+            <!-- Statutory Information Box -->
+            <div class="card card-civic p-3 bg-light border">
+                <h6 class="fw-bold small mb-2"><i class="fas fa-info-circle text-primary me-1"></i>Notice to Complainant
+                </h6>
+                <p class="text-muted" style="font-size: 0.785rem; line-height: 1.4;">
+                    Your intake docket has been recorded in the CivicShield system. If additional information is needed,
+                    your investigating officer will post a follow-up request to this timeline and send you an in-app
+                    alert.
+                </p>
+                <div class="pt-2 border-top">
+                    <button type="button" class="btn btn-sm btn-outline-secondary w-100 btn-open-assistant">
+                        <i class="fas fa-hands-helping me-1"></i> Ask Citizen Help Desk
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.timeline-item {
-    position: relative;
-    padding-left: 30px;
-}
-.timeline-badge {
-    position: absolute;
-    left: 0;
-    top: 0;
-}
-.timeline-content {
-    padding-left: 10px;
-}
-</style>
 {% endblock %}

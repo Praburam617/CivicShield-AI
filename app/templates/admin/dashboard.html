@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Console — CivicShield AI{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-dark text-white">SYSTEM ADMINISTRATOR CONSOLE</span>
+                <span class="text-muted small">&bull; Real-time Operations Oversight</span>
+            </div>
+            <h3 class="fw-bold text-dark mb-1">Executive Safety Dashboard</h3>
+            <p class="text-muted small mb-0">Platform incident processing, officer assignments, and aggregate statistics.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('admin.manage_complaints') }}" class="btn btn-civic-primary">
+                <i class="fas fa-folder-open me-1"></i> All Complaints
+            </a>
+            <a href="{{ url_for('admin.manage_officers') }}" class="btn btn-civic-secondary">
+                <i class="fas fa-user-shield me-1"></i> Manage Officers
+            </a>
+            <a href="{{ url_for('admin.manage_users') }}" class="btn btn-civic-secondary">
+                <i class="fas fa-users-gear me-1"></i> Manage Users
+            </a>
+            <a href="{{ url_for('admin.analytics') }}" class="btn btn-civic-secondary">
+                <i class="fas fa-chart-line me-1"></i> Full Analytics
+            </a>
+            <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-civic-secondary">
+                <i class="fas fa-shield me-1"></i> Audit Logs
+            </a>
+        </div>
+    </div>
+
+    <!-- Live Executive Metrics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-2">
+            <div class="card card-civic p-3">
+                <div class="text-muted small fw-semibold text-uppercase">Total Filed</div>
+                <h3 class="fw-bold text-dark mb-0 mt-1">{{ total_complaints }}</h3>
+                <small class="text-muted" style="font-size: 0.7rem;">Active Dockets</small>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="card card-civic p-3">
+                <div class="text-muted small fw-semibold text-uppercase">Pending</div>
+                <h3 class="fw-bold text-warning mb-0 mt-1">{{ pending_count }}</h3>
+                <small class="text-muted" style="font-size: 0.7rem;">Needs Verification</small>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="card card-civic p-3">
+                <div class="text-muted small fw-semibold text-uppercase">Investigating</div>
+                <h3 class="fw-bold text-primary mb-0 mt-1">{{ investigating_count }}</h3>
+                <small class="text-muted" style="font-size: 0.7rem;">Assigned Cases</small>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="card card-civic p-3">
+                <div class="text-muted small fw-semibold text-uppercase">Resolved</div>
+                <h3 class="fw-bold text-success mb-0 mt-1">{{ resolved_count }}</h3>
+                <small class="text-muted" style="font-size: 0.7rem;">Concluded</small>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="card card-civic p-3">
+                <div class="text-muted small fw-semibold text-uppercase">Rejected</div>
+                <h3 class="fw-bold text-danger mb-0 mt-1">{{ rejected_count }}</h3>
+                <small class="text-muted" style="font-size: 0.7rem;">Invalid / Out of scope</small>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="card card-civic p-3">
+                <div class="text-muted small fw-semibold text-uppercase">Officers Roster</div>
+                <h3 class="fw-bold text-teal mb-0 mt-1">{{ total_officers_directory }}</h3>
+                <small class="text-muted" style="font-size: 0.7rem;">{{ total_officers }} Login &bull; {{ total_citizens }} Citizens</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <!-- Monthly Trends Chart -->
+        <div class="col-lg-7">
+            <div class="card card-civic p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-dark mb-0"><i class="fas fa-chart-line text-primary me-2"></i>Monthly Complaint Influx</h6>
+                    <span class="badge bg-light text-secondary border">6-Month Trend</span>
+                </div>
+                <div style="height: 240px; position: relative;">
+                    <canvas id="monthlyTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crime Category Distribution -->
+        <div class="col-lg-5">
+            <div class="card card-civic p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-dark mb-0"><i class="fas fa-chart-pie text-teal me-2"></i>Crime Category Distribution</h6>
+                    <span class="badge bg-light text-secondary border">Top Categories</span>
+                </div>
+                <div style="height: 240px; position: relative;">
+                    <canvas id="categoryDonutChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Submissions Table -->
+    <div class="card card-civic">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-dark"><i class="fas fa-list-check me-2 text-primary"></i>Latest Incident Submissions</span>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('admin.export_csv') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-file-csv me-1"></i> Export CSV
+                </a>
+                <a href="{{ url_for('admin.export_pdf') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-file-pdf text-danger me-1"></i> Export PDF
+                </a>
+                <a href="{{ url_for('admin.manage_complaints') }}" class="btn btn-sm btn-civic-primary">
+                    Manage All
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% if recent_complaints %}
+                <div class="table-responsive">
+                    <table class="table table-civic mb-0">
+                        <thead>
+                            <tr>
+                                <th>Complaint Ref</th>
+                                <th>Title & Category</th>
+                                <th>Station & District</th>
+                                <th>Complainant</th>
+                                <th>Status</th>
+                                <th>Officer</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in recent_complaints %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('admin.view_complaint', report_id=c.id) }}" class="fw-bold text-primary text-decoration-none">
+                                            {{ c.complaint_number }}
+                                        </a>
+                                        <div class="text-muted" style="font-size: 0.75rem;">
+                                            {{ c.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark text-truncate" style="max-width: 220px;" title="{{ c.title }}">
+                                            {{ c.title }}
+                                        </div>
+                                        <span class="badge bg-light text-secondary border" style="font-size: 0.725rem;">
+                                            {{ c.crime_category }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-semibold text-dark">{{ c.police_station }}</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">{{ c.district }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-semibold text-dark">{{ c.complainant.full_name }}</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">{{ c.complainant.username }}</div>
+                                    </td>
+                                    <td>
+                                        {% set st_class = c.status.lower().replace(' ', '-') %}
+                                        <span class="badge-status status-{{ st_class }}">
+                                            {{ c.status }}
+                                        </span>
+                                    </td>
+                                    <td class="small text-muted">
+                                        {{ c.assigned_officer or (c.officer_user.full_name if c.officer_user else 'Unassigned') }}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('admin.view_complaint', report_id=c.id) }}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-gear me-1"></i> Manage
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted small">No complaint records found in database.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Render Monthly Trend Line Chart
+    const trendCtx = document.getElementById('monthlyTrendChart');
+    if (trendCtx) {
+        const trendLabels = [{% for m, c in monthly_trends %}'{{ m }}',{% endfor %}];
+        const trendData = [{% for m, c in monthly_trends %}{{ c }},{% endfor %}];
+
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: trendLabels.length ? trendLabels : ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+                datasets: [{
+                    label: 'Complaints Filed',
+                    data: trendData.length ? trendData : [2, 4, 3, 5, 2, 8],
+                    borderColor: '#2563EB',
+                    backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointBackgroundColor: '#2563EB',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#F1F5F9' }, ticks: { stepSize: 1, precision: 0 } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // Render Category Donut Chart
+    const donutCtx = document.getElementById('categoryDonutChart');
+    if (donutCtx) {
+        const catLabels = [{% for cat, cnt in category_counts %}'{{ cat }}',{% endfor %}];
+        const catData = [{% for cat, cnt in category_counts %}{{ cnt }},{% endfor %}];
+
+        new Chart(donutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: catLabels.length ? catLabels : ['Theft', 'Cyber Crime', 'Burglary', 'Robbery', 'Other'],
+                datasets: [{
+                    data: catData.length ? catData : [4, 3, 2, 1, 1],
+                    backgroundColor: ['#2563EB', '#0F766E', '#F59E0B', '#EF4444', '#8B5CF6', '#64748B', '#06B6D4', '#EC4899'],
+                    borderWidth: 2,
+                    borderColor: '#FFFFFF'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

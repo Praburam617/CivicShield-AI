@@ -1,104 +1,140 @@
 {% extends "base.html" %}
 
+{% block title %}My Complaints — CivicShield AI{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="row">
-        <div class="col-12">
-            <h2><i class="fas fa-list me-2"></i>My Complaints</h2>
-            <p class="text-muted">View and track all your filed complaints</p>
-            <hr>
+<div class="container py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('user.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">My Complaints</li>
+        </ol>
+    </nav>
+
+    <!-- Header & Action -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">
+                <i class="fas fa-list-check text-primary me-2"></i>My Registered Complaints
+            </h3>
+            <p class="text-muted small mb-0">Track and manage your submitted incident reports and investigation history.</p>
+        </div>
+        <div>
+            <a href="{{ url_for('user.submit_report') }}" class="btn btn-civic-primary">
+                <i class="fas fa-plus-circle me-1"></i> File New Complaint
+            </a>
         </div>
     </div>
-    
-    <div class="row">
-        <div class="col-12">
+
+    <!-- Status Filters Bar -->
+    <div class="card card-civic p-3 mb-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="small fw-semibold text-muted text-uppercase">Filter Status:</div>
+            <div class="btn-group btn-group-sm flex-wrap" role="group">
+                <a href="{{ url_for('user.my_reports') }}" class="btn btn-outline-secondary {% if not current_status %}active{% endif %}">All</a>
+                <a href="{{ url_for('user.my_reports', status='Pending') }}" class="btn btn-outline-secondary {% if current_status == 'Pending' %}active{% endif %}">Pending</a>
+                <a href="{{ url_for('user.my_reports', status='Under Investigation') }}" class="btn btn-outline-secondary {% if current_status == 'Under Investigation' %}active{% endif %}">Under Investigation</a>
+                <a href="{{ url_for('user.my_reports', status='Action Required') }}" class="btn btn-outline-secondary {% if current_status == 'Action Required' %}active{% endif %}">Action Required</a>
+                <a href="{{ url_for('user.my_reports', status='Resolved') }}" class="btn btn-outline-secondary {% if current_status == 'Resolved' %}active{% endif %}">Resolved</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complaints Table -->
+    <div class="card card-civic">
+        <div class="card-body p-0">
             {% if reports.items %}
                 <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-dark">
+                    <table class="table table-civic mb-0">
+                        <thead>
                             <tr>
-                                <th>Complaint No.</th>
-                                <th>Title</th>
-                                <th>Category</th>
-                                <th>Police Station</th>
+                                <th>Complaint Reference</th>
+                                <th>Title & Category</th>
+                                <th>Location & Station</th>
+                                <th>Incident Date</th>
                                 <th>Status</th>
-                                <th>Filed On</th>
-                                <th>Last Updated</th>
-                                <th>Action</th>
+                                <th class="text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for report in reports.items %}
-                            <tr>
-                                <td><code>{{ report.complaint_number }}</code></td>
-                                <td>{{ report.title[:50] }}{% if report.title|length > 50 %}...{% endif %}</td>
-                                <td>{{ report.crime_category }}</td>
-                                <td>{{ report.police_station }}</td>
-                                <td>
-                                    {% if report.status == 'Pending' %}
-                                        <span class="badge bg-warning">Pending</span>
-                                    {% elif report.status == 'Under Investigation' %}
-                                        <span class="badge bg-info">Under Investigation</span>
-                                    {% elif report.status == 'Resolved' %}
-                                        <span class="badge bg-success">Resolved</span>
-                                    {% elif report.status == 'Rejected' %}
-                                        <span class="badge bg-danger">Rejected</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">{{ report.status }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ report.created_at.strftime('%d-%m-%Y %H:%M') }}</td>
-                                <td>{{ report.updated_at.strftime('%d-%m-%Y %H:%M') }}</td>
-                                <td>
-                                    <a href="{{ url_for('user.report_detail', report_id=report.id) }}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-eye"></i> View
-                                    </a>
-                                </td>
-                            </tr>
+                            {% for r in reports.items %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('user.report_detail', report_id=r.id) }}" class="fw-bold text-decoration-none text-primary">
+                                            {{ r.complaint_number }}
+                                        </a>
+                                        <div class="text-muted" style="font-size: 0.75rem;">
+                                            Filed {{ r.created_at.strftime('%Y-%m-%d') }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark text-truncate" style="max-width: 250px;" title="{{ r.title }}">
+                                            {{ r.title }}
+                                        </div>
+                                        <span class="badge bg-light text-secondary border" style="font-size: 0.725rem;">
+                                            {{ r.crime_category }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-medium text-dark">{{ r.police_station }}</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">{{ r.district }}</div>
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ r.incident_date.strftime('%Y-%m-%d %H:%M') if r.incident_date else "N/A" }}
+                                    </td>
+                                    <td>
+                                        {% set st_class = r.status.lower().replace(' ', '-') %}
+                                        <span class="badge-status status-{{ st_class }}">
+                                            {{ r.status }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('user.report_detail', report_id=r.id) }}" class="btn btn-sm btn-outline-secondary" title="View Dossier">
+                                            <i class="fas fa-eye me-1"></i> View
+                                        </a>
+                                        <a href="{{ url_for('user.export_complaint_pdf', report_id=r.id) }}" class="btn btn-sm btn-outline-secondary ms-1" title="Download Case Docket PDF">
+                                            <i class="fas fa-file-pdf text-danger"></i>
+                                        </a>
+                                    </td>
+                                </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Pagination -->
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center">
-                        {% if reports.has_prev %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('user.my_reports', page=reports.prev_num) }}">Previous</a>
-                            </li>
-                        {% else %}
-                            <li class="page-item disabled"><span class="page-link">Previous</span></li>
-                        {% endif %}
-                        
-                        {% for page_num in reports.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
-                            {% if page_num %}
-                                {% if reports.page == page_num %}
-                                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
-                                {% else %}
-                                    <li class="page-item"><a class="page-link" href="{{ url_for('user.my_reports', page=page_num) }}">{{ page_num }}</a></li>
-                                {% endif %}
-                            {% else %}
-                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% if reports.pages > 1 %}
+                    <div class="p-3 border-top d-flex justify-content-between align-items-center">
+                        <span class="small text-muted">Page {{ reports.page }} of {{ reports.pages }}</span>
+                        <ul class="pagination pagination-sm mb-0">
+                            {% if reports.has_prev %}
+                                <li class="page-item"><a class="page-link" href="{{ url_for('user.my_reports', page=reports.prev_num, status=current_status) }}">Previous</a></li>
                             {% endif %}
-                        {% endfor %}
-                        
-                        {% if reports.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('user.my_reports', page=reports.next_num) }}">Next</a>
-                            </li>
-                        {% else %}
-                            <li class="page-item disabled"><span class="page-link">Next</span></li>
-                        {% endif %}
-                    </ul>
-                </nav>
+                            {% for p in reports.iter_pages() %}
+                                {% if p %}
+                                    <li class="page-item {% if p == reports.page %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('user.my_reports', page=p, status=current_status) }}">{{ p }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                                {% endif %}
+                            {% endfor %}
+                            {% if reports.has_next %}
+                                <li class="page-item"><a class="page-link" href="{{ url_for('user.my_reports', page=reports.next_num, status=current_status) }}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                {% endif %}
             {% else %}
                 <div class="text-center py-5">
-                    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
-                    <h4>No complaints filed yet</h4>
-                    <p>Click the button below to file your first complaint</p>
-                    <a href="{{ url_for('user.submit_report') }}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-plus-circle me-2"></i>File a Complaint
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center p-4 mb-3 text-muted">
+                        <i class="fas fa-folder-open fs-2"></i>
+                    </div>
+                    <h6 class="fw-bold text-dark">No Complaints Found</h6>
+                    <p class="text-muted small mb-3">No incident reports match your current filter selection.</p>
+                    <a href="{{ url_for('user.submit_report') }}" class="btn btn-civic-primary">
+                        <i class="fas fa-plus me-1"></i> File New Incident
                     </a>
                 </div>
             {% endif %}

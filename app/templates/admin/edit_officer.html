@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — Admin Console{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_officers') }}">Manage Officers</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-civic shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3 pb-3 border-bottom mb-4">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fs-4 fw-bold" style="width: 52px; height: 52px;">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-1 fw-bold text-dark">{{ title }}</h4>
+                            <p class="text-muted small mb-0">Define station assignment, rank designation, and case availability.</p>
+                        </div>
+                    </div>
+
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label text-muted small fw-semibold">Officer Full Name <span class="text-danger">*</span></label>
+                                {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="e.g. Karthik Raj", required=True) }}
+                                {% for error in form.name.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="badge_number" class="form-label text-muted small fw-semibold">Fictional Badge Number <span class="text-danger">*</span></label>
+                                {{ form.badge_number(class="form-control font-monospace" + (" is-invalid" if form.badge_number.errors else ""), placeholder="e.g. DEMO-SI-071", required=True) }}
+                                {% for error in form.badge_number.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text small text-muted">Use DEMO- prefix to preserve fictional dataset integrity.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="designation" class="form-label text-muted small fw-semibold">Designation / Rank <span class="text-danger">*</span></label>
+                                {{ form.designation(class="form-select" + (" is-invalid" if form.designation.errors else ""), required=True) }}
+                                {% for error in form.designation.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="department" class="form-label text-muted small fw-semibold">Department / Wing <span class="text-danger">*</span></label>
+                                {{ form.department(class="form-control" + (" is-invalid" if form.department.errors else ""), placeholder="e.g. Law and Order, Crime Investigation", required=True) }}
+                                {% for error in form.department.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="police_station" class="form-label text-muted small fw-semibold">Police Station Jurisdiction <span class="text-danger">*</span></label>
+                                {{ form.police_station(class="form-select" + (" is-invalid" if form.police_station.errors else ""), required=True) }}
+                                {% for error in form.police_station.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-check form-switch p-3 bg-light rounded border">
+                                    {{ form.is_available(class="form-check-input ms-0 me-2", id="isAvailableSwitch") }}
+                                    <label class="form-check-label fw-semibold small text-dark" for="isAvailableSwitch">
+                                        Available for Active Investigation Assignments
+                                    </label>
+                                    <div class="text-muted small ms-4" style="font-size: 0.775rem;">
+                                        When checked, this officer appears in the Admin case assignment dropdown for their station.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ url_for('admin.manage_officers') }}" class="btn btn-outline-secondary">Cancel</a>
+                            {{ form.submit(class="btn btn-civic-primary px-4") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

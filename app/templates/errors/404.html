@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found (404) — CivicShield AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center" style="max-width: 600px;">
+    <div class="rounded-circle bg-light text-muted d-inline-flex align-items-center justify-content-center p-4 mb-3 fs-1" style="width: 80px; height: 80px;">
+        <i class="fas fa-magnifying-glass"></i>
+    </div>
+    <h3 class="fw-bold text-dark mb-2">404 — Page Not Found</h3>
+    <p class="text-muted small mb-4">
+        The requested URL, complaint reference, or document could not be located on the CivicShield AI portal.
+    </p>
+    <div class="d-flex justify-content-center gap-2">
+        <a href="{{ url_for('auth.index') }}" class="btn btn-civic-secondary">Portal Home</a>
+        <a href="{{ url_for('user.track_report') }}" class="btn btn-civic-primary">Track Complaint</a>
+    </div>
+</div>
+{% endblock %}
