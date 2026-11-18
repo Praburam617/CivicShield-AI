@@ -122,10 +122,10 @@ graph TD
         Vault["Quarantined Evidence Vault"]
     end
 
-    Client -->|HTTPS + CSRF Token| Server
-    Wizard -->|Debounced Narrative| API["/api/ai/classify"]
+    Client -->|"HTTPS + CSRF Token"| Server
+    Wizard -->|"Debounced Narrative"| API["/api/ai/classify"]
     API --> Intelligence
-    Drawer -->|Query (EN / TA)| HelpAPI["/api/ai/help"]
+    Drawer -->|"Query (EN / TA)"| HelpAPI["/api/ai/help"]
     HelpAPI --> KB
     Routes --> ORM
     ORM --> DB
@@ -456,4 +456,4 @@ For security policies, defensive architectures, and vulnerability disclosure gui
 
 <div align="center">
 <sub>Developed with passion for modern web engineering, defensive application security, and civic technology.</sub>
-</div>\n
+</div>
